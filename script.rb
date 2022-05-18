@@ -15,8 +15,10 @@ class Game
 
   def start_game
     create_players
+    loop do
     round = Round.new(@players, @board)
-    round.print_round
+    @players.each_index { |index| round.print_round(index) }
+    end
   end
 end
 
@@ -28,15 +30,18 @@ class Player
 end
 
 class Round
+  @@round_instances = 0
   def initialize(players, board)
     @players = players
     @board = board
+    @@round_instances += 1
+    
   end
 
   def show_board
     string_board = ''
     @board.each do |row|
-      row.each do  |position|
+      row.each do |position|
         string_board += " #{position} |"
       end
       string_board.delete_suffix!('|')
@@ -46,14 +51,17 @@ class Round
   end
 
   def get_coordinate
-    puts 'Type the coordinate of your markdown here: '
+    puts 'Type the coordinate of your markdown here:'
     coordinate = gets.chomp
     coordinate
   end
 
-  def print_round
-    puts "Round x\n"
-    puts "#{show_board}\n"
+  def print_round(index)
+    puts "Round #{@@round_instances}"
+    puts "It's #{@players[index].name}'s turn!\n\n"
+    puts "#{show_board}\n\n"
+    puts "#{@players[0].name}: X"
+    puts "#{@players[0].name}: O"
     get_coordinate
   end
 end
