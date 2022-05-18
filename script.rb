@@ -1,6 +1,6 @@
 class Game
   def initialize
-    @board = Array.new(3) { Array.new(3, ' ') }
+    @board = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     start_game
   end
 
@@ -16,8 +16,12 @@ class Game
   def start_game
     create_players
     loop do
-    round = Round.new(@players, @board)
-    @players.each_index { |index| round.print_round(index) }
+      round = Round.new(@players, @board)
+      @players.each_index do |index|
+        round.print_round(index)
+        mark_indexes = round.get_indexes
+        @board = round.place_mark(mark_indexes)
+      end
     end
   end
 end
@@ -50,19 +54,49 @@ class Round
     string_board.delete_suffix!("\n---+---+---\n")
   end
 
-  def get_coordinate
-    puts 'Type the coordinate of your markdown here:'
-    coordinate = gets.chomp
-    coordinate
-  end
-
   def print_round(index)
     puts "Round #{@@round_instances}"
     puts "It's #{@players[index].name}'s turn!\n\n"
     puts "#{show_board}\n\n"
     puts "#{@players[0].name}: X"
-    puts "#{@players[0].name}: O"
-    get_coordinate
+    puts "#{@players[1].name}: O"
+    puts 'Type one of the numbers on screen to place your markdown here:'
+  end
+
+  def get_pos
+    position = gets.chomp
+    if position.length == 1 && position.match?(/[1-9]/)
+      position.to_i
+    else
+      puts "Invalid answer! Try again."
+      get_pos
+    end
+  end
+
+  def search_indexes(element)
+    arr_indexes = nil
+    @board.each_index do |i|
+      @board[i].each_index do |j|
+        arr_indexes = [i, j] if element == @board[i][j]
+      end
+    end
+    arr_indexes
+  end
+
+  def get_indexes
+    position = get_pos
+    position_indexes = search_indexes(position)
+    if position_indexes.nil?
+      puts 'An mark already has been placed on this position! Try other number.'
+      get_indexes
+    else
+      position_indexes
+    end
+  end
+
+  def place_mark(arr_indexs)
+    @board[arr_indexs[0]][arr_indexs[1]] = '$'
+    @board
   end
 end
 
