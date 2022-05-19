@@ -10,26 +10,31 @@ class Game
       puts "Hello Player #{i + 1}! Insert your name below here:"
       name = gets.chomp
       @players[i] = Player.new(name)
+      @players[i].new_mark(i)
     end
   end
 
   def start_game
     create_players
     loop do
-      round = Round.new(@players, @board)
-      @players.each_index do |index|
-        round.print_round(index)
+      @players.each_index do |player_i|
+        round = Round.new(@players, @board)
+        round.print_round(player_i)
         mark_indexes = round.get_indexes
-        @board = round.place_mark(mark_indexes)
+        @board = round.place_mark(mark_indexes, player_i)
       end
     end
   end
 end
 
 class Player
-  attr_reader :name
+  attr_reader :name, :mark
+  @@marks_list = ['X' ,'O']
   def initialize(name)
     @name = name
+  end
+  def new_mark(index)
+    @mark = @@marks_list[index]
   end
 end
 
@@ -39,7 +44,7 @@ class Round
     @players = players
     @board = board
     @@round_instances += 1
-    
+
   end
 
   def show_board
@@ -94,8 +99,8 @@ class Round
     end
   end
 
-  def place_mark(arr_indexs)
-    @board[arr_indexs[0]][arr_indexs[1]] = '$'
+  def place_mark(arr_indexs, player_i)
+    @board[arr_indexs[0]][arr_indexs[1]] = @players[player_i].mark
     @board
   end
 end
