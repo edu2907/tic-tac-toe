@@ -24,7 +24,7 @@ class Game
   end
 
   def vertical?(win_condition, board)
-    condition = false 
+    condition = false
     board.length.times do |i|
       ver_arr = [board[0][i], board[1][i], board[2][i]]
       if ver_arr.join == win_condition
@@ -51,27 +51,48 @@ class Game
   end
 
   def winner?(player, board)
-    mark = player.mark
     win_condition = player.win_condition
     horizontal?(win_condition, board) || vertical?(win_condition, board) || diagonal?(win_condition, board)
+  end
+
+  def draw?(board)
+    condition = true
+    board.each do |row|
+      row.each do |el|
+        condition = false if el.is_a?(Integer)
+      end
+    end
+    condition
+  end
+
+  def end_game?(player, board)
+    condition = false 
+    if winner?(player, board)
+      puts "#{player.name} wins!"
+      condition = true
+    elsif draw?(board)
+      puts 'It\'s a tie!'
+      condition = true
+    end
+    condition
   end
 
   def start_game
     create_players
     loop do
-      endgame = false
+      end_game = false
       @players.each_index do |player_i|
         round = Round.new(@players, @board)
         round.print_round(player_i)
         mark_indexes = round.get_indexes
         @board = round.place_mark(mark_indexes, player_i)
-        if winner?(@players[player_i], @board)
-          puts "#{@players[player_i].name} wins!"
-          endgame = true
+
+        if end_game?(@players[player_i], @board)
+          end_game = true
           break
         end
       end
-      break if endgame
+      break if end_game
     end
   end
 end
