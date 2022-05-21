@@ -9,32 +9,80 @@ class Game
     @players.length.times do |i|
       puts "Hello Player #{i + 1}! Insert your name below here:"
       name = gets.chomp
-      @players[i] = Player.new(name)
-      @players[i].new_mark(i)
+      @players[i] = Player.new(name, i)
     end
+  end
+
+  def horizontal?(win_condition, board)
+    condition = false
+    board.each do |hor_arr| 
+      if hor_arr.join == win_condition 
+        condition = true
+      end
+    end
+    condition
+  end
+
+  def vertical?(win_condition, board)
+    condition = false 
+    board.length.times do |i|
+      ver_arr = [board[0][i], board[1][i], board[2][i]]
+      if ver_arr.join == win_condition
+        condition = true
+      end
+    end
+    condition
+  end
+
+  def diagonal?(win_condition, board)
+    condition = false
+    diag_arr = []
+    diag_inv_arr = []
+    j = 2
+    board.each_index do |i|
+      diag_arr[i] = board[i][i]
+      diag_inv_arr[i] = board[i][j]
+      j -= 1
+    end
+    if diag_arr.join == win_condition || diag_inv_arr.join == win_condition
+      condition = true
+    end
+    condition
+  end
+
+  def winner?(player, board)
+    mark = player.mark
+    win_condition = player.win_condition
+    horizontal?(win_condition, board) || vertical?(win_condition, board) || diagonal?(win_condition, board)
   end
 
   def start_game
     create_players
     loop do
+      endgame = false
       @players.each_index do |player_i|
         round = Round.new(@players, @board)
         round.print_round(player_i)
         mark_indexes = round.get_indexes
         @board = round.place_mark(mark_indexes, player_i)
+        if winner?(@players[player_i], @board)
+          puts "#{@players[player_i].name} wins!"
+          endgame = true
+          break
+        end
       end
+      break if endgame
     end
   end
 end
 
 class Player
-  attr_reader :name, :mark
+  attr_reader :name, :mark, :win_condition
   @@marks_list = ['X' ,'O']
-  def initialize(name)
+  def initialize(name, player_i)
     @name = name
-  end
-  def new_mark(index)
-    @mark = @@marks_list[index]
+    @mark = @@marks_list[player_i]
+    @win_condition = @mark*3
   end
 end
 
@@ -103,6 +151,7 @@ class Round
     @board[arr_indexs[0]][arr_indexs[1]] = @players[player_i].mark
     @board
   end
+
 end
 
 Game.new
