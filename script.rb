@@ -1,7 +1,25 @@
+# frozen_string_literal: true
 class Game
   def initialize
     @board = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    start_game
+  end
+
+  def start
+    create_players
+    loop do
+      end_game = false
+      @players.each_index do |player_i|
+        round = Round.new(@players, @board)
+        round.print_round(player_i)
+        mark_indexes = round.get_indexes
+        @board = round.place_mark(mark_indexes, player_i)
+        if end_game?(@players[player_i], @board)
+          end_game = true
+          break
+        end
+      end
+      break if end_game
+    end
   end
 
   def create_players
@@ -13,12 +31,22 @@ class Game
     end
   end
 
+  def end_game?(player, board)
+    condition = false
+    if winner?(player, board)
+      puts "#{player.name} wins!"
+      condition = true
+    elsif draw?(board)
+      puts 'It\'s a tie!'
+      condition = true
+    end
+    condition
+  end
+
   def horizontal?(win_condition, board)
     condition = false
-    board.each do |hor_arr| 
-      if hor_arr.join == win_condition 
-        condition = true
-      end
+    board.each do |hor_arr|
+      condition = true if hor_arr.join == win_condition
     end
     condition
   end
@@ -27,26 +55,16 @@ class Game
     condition = false
     board.length.times do |i|
       ver_arr = [board[0][i], board[1][i], board[2][i]]
-      if ver_arr.join == win_condition
-        condition = true
-      end
+      condition = true if ver_arr.join == win_condition
     end
     condition
   end
 
   def diagonal?(win_condition, board)
     condition = false
-    diag_arr = []
-    diag_inv_arr = []
-    j = 2
-    board.each_index do |i|
-      diag_arr[i] = board[i][i]
-      diag_inv_arr[i] = board[i][j]
-      j -= 1
-    end
-    if diag_arr.join == win_condition || diag_inv_arr.join == win_condition
-      condition = true
-    end
+    diag_arr = [board[0][0], board[1][1], board[2][2]]
+    diag_inv_arr = [board[0][2], board[1][1], board[2][0]]
+    condition = true if diag_arr.join == win_condition || diag_inv_arr.join == win_condition
     condition
   end
 
@@ -64,46 +82,16 @@ class Game
     end
     condition
   end
-
-  def end_game?(player, board)
-    condition = false 
-    if winner?(player, board)
-      puts "#{player.name} wins!"
-      condition = true
-    elsif draw?(board)
-      puts 'It\'s a tie!'
-      condition = true
-    end
-    condition
-  end
-
-  def start_game
-    create_players
-    loop do
-      end_game = false
-      @players.each_index do |player_i|
-        round = Round.new(@players, @board)
-        round.print_round(player_i)
-        mark_indexes = round.get_indexes
-        @board = round.place_mark(mark_indexes, player_i)
-
-        if end_game?(@players[player_i], @board)
-          end_game = true
-          break
-        end
-      end
-      break if end_game
-    end
-  end
 end
 
 class Player
   attr_reader :name, :mark, :win_condition
-  @@marks_list = ['X' ,'O']
+
+  @@marks_list = %w[X O]
   def initialize(name, player_i)
     @name = name
     @mark = @@marks_list[player_i]
-    @win_condition = @mark*3
+    @win_condition = @mark * 3
   end
 end
 
@@ -113,7 +101,6 @@ class Round
     @players = players
     @board = board
     @@round_instances += 1
-
   end
 
   def show_board
@@ -142,7 +129,7 @@ class Round
     if position.length == 1 && position.match?(/[1-9]/)
       position.to_i
     else
-      puts "Invalid answer! Try again."
+      puts 'Invalid answer! Try again.'
       get_pos
     end
   end
@@ -172,7 +159,6 @@ class Round
     @board[arr_indexs[0]][arr_indexs[1]] = @players[player_i].mark
     @board
   end
-
 end
 
-Game.new
+Game.new.start
